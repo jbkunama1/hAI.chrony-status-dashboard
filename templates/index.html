@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>highfish Chrony Status Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if refresh_seconds %}
+    <meta http-equiv="refresh" content="{{ refresh_seconds }}">
+    {% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>highfish Chrony Status Dashboard</h1>
+            <p class="subtitle">LAN NTP / Chrony Overview</p>
+        </header>
+
+        <section class="timebox">
+            <h2>Aktuelle Uhrzeit (Lokale Zeit)</h2>
+            <p class="time">{{ now_local }}</p>
+            <p class="time-utc">(UTC: {{ now_utc }})</p>
+        </section>
+
+        <section>
+            <h2>Tracking</h2>
+            <pre>{{ tracking }}</pre>
+        </section>
+
+        <section>
+            <h2>Sources</h2>
+            <pre>{{ sources }}</pre>
+        </section>
+
+        <section>
+            <h2>Activity</h2>
+            <pre>{{ activity }}</pre>
+        </section>
+
+        <section>
+            <h2>Clients</h2>
+            <pre>{{ clients }}</pre>
+        </section>
+
+        <footer>
+            <p>
+                Powered by <strong>Chrony</strong> &amp; Flask • 
+                <a href="https://chrony-project.org" target="_blank" rel="noopener noreferrer">chrony-project.org</a>
+            </p>
+            <p>
+                <a href="https://www.buymeacoffee.com/DEINNAME" target="_blank" rel="noopener noreferrer">
+                    ☕ Buy me a coffee
+                </a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
