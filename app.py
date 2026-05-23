@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo  # Python 3.9+
 from flask import Flask, render_template
 
 app = Flask(__name__)
+ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
 
 def run_command(cmd):
     try:
@@ -21,6 +22,9 @@ def run_command(cmd):
         output = f"Unexpected error running '{cmd}': {e}"
     return output.strip()
 
+def command_failed(output):
+    return not output or output.startswith(ERROR_PREFIXES)
+
 @app.route("/")
 def index():
     # Zeiten
@@ -32,9 +36,9 @@ def index():
     sources = run_command("chronyc sources -v")
     activity = run_command("chronyc activity")
     clients = run_command("chronyc -n clients")
-    if not clients or clients.lower().startswith("error running"):
+    if command_failed(clients):
         fallback_clients = run_command("chronyc clients")
-        if fallback_clients and not fallback_clients.lower().startswith("error running"):
+        if not command_failed(fallback_clients):
             clients = fallback_clients
         else:
             clients = (
