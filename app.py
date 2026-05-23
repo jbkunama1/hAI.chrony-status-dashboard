@@ -16,8 +16,7 @@ def run_command(cmd):
             timeout=5
         )
     except subprocess.CalledProcessError as e:
-        output = f"Error running '{cmd}':
-{e.output}"
+        output = f"Error running '{cmd}':\n{e.output}"
     except Exception as e:
         output = f"Unexpected error running '{cmd}': {e}"
     return output.strip()
@@ -32,7 +31,18 @@ def index():
     tracking = run_command("chronyc tracking")
     sources = run_command("chronyc sources -v")
     activity = run_command("chronyc activity")
-    clients = run_command("chronyc clients")
+    clients = run_command("chronyc -n clients")
+    if not clients or clients.lower().startswith("error running"):
+        fallback_clients = run_command("chronyc clients")
+        if fallback_clients and not fallback_clients.lower().startswith("error running"):
+            clients = fallback_clients
+        else:
+            clients = (
+                "Keine Client-Daten verfügbar.\n"
+                "Prüfe in chrony.conf: 'noclientlog' deaktivieren und 'clientloglimit' > 0.\n"
+                "Stelle sicher, dass der Flask-User 'chronyc -n clients' ausführen darf.\n\n"
+                f"{clients or fallback_clients or ''}"
+            ).strip()
 
     return render_template(
         "index.html",
