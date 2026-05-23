@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo  # Python 3.9+
 from flask import Flask, render_template
 
 app = Flask(__name__)
+ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
 
 def run_command(cmd):
     try:
@@ -16,11 +17,13 @@ def run_command(cmd):
             timeout=5
         )
     except subprocess.CalledProcessError as e:
-        output = f"Error running '{cmd}':
-{e.output}"
+        output = f"Error running '{cmd}':\n{e.output}"
     except Exception as e:
         output = f"Unexpected error running '{cmd}': {e}"
     return output.strip()
+
+def command_failed(output):
+    return not output or output.startswith(ERROR_PREFIXES)
 
 @app.route("/")
 def index():
@@ -32,7 +35,18 @@ def index():
     tracking = run_command("chronyc tracking")
     sources = run_command("chronyc sources -v")
     activity = run_command("chronyc activity")
-    clients = run_command("chronyc clients")
+    clients = run_command("chronyc -n clients")
+    if command_failed(clients):
+        fallback_clients = run_command("chronyc clients")
+        if not command_failed(fallback_clients):
+            clients = fallback_clients
+        else:
+            clients = (
+                "Keine Client-Daten verfügbar.\n"
+                "Prüfe in chrony.conf: 'noclientlog' deaktivieren und 'clientloglimit' > 0.\n"
+                "Stelle sicher, dass der Flask-User 'chronyc -n clients' ausführen darf.\n\n"
+                f"{clients or fallback_clients or ''}"
+            ).strip()
 
     return render_template(
         "index.html",
