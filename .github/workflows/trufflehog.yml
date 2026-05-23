@@ -1,0 +1,21 @@
+name: TruffleHog Secret Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # alle 6 Stunden – anpassen nach Bedarf
+  push:
+    branches: [main, master]
+
+jobs:
+  trufflehog-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # gesamte History scannen
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
