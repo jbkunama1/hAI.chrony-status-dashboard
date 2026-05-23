@@ -1,4 +1,4 @@
-# ⏱️ highfish Chrony Status Dashboard
+# ⏱️ highfish Chrony Status Dashboard[![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://www.buymeacoffee.com/highfish)
 
 ![Chrony LAN Logo](./assets/chrony-logo.png)
 
