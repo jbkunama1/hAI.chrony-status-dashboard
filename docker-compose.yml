@@ -9,9 +9,9 @@ services:
     ports:
       - "1234:8000"
     networks:
-      - highfishNetwork
+      - highfishnetwork
 
 networks:
-  highfishNetwork:
+  highfishnetwork:
     driver: bridge
 
