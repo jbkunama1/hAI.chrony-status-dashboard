@@ -12,7 +12,7 @@
 
 ![Chrony Logo](chrony-logo.png)
 
-> **Web-Dashboard für deinen Chrony-NTP-Server** – Flask-App, die `chronyc` ausführt und die Ausgabe im Browser darstellt. Docker-basiert, keine Datenbank.
+> **Web-Dashboard für deinen Chrony-NTP-Server** – Flask-App, die `chronyc` gegen einen Chrony-Daemon ausführt und die Ausgabe im Browser darstellt. Docker-basiert, keine Datenbank.
 
 ---
 
@@ -24,6 +24,7 @@
 - 🟥 **Fehleranzeige** – fehlgeschlagene Befehle werden rot markiert
 - 🌙 **Dark/Light Mode** – per Klick umschaltbar
 - 📱 **Mobil nutzbar** – responsive Oberfläche
+- ⚙️ **Per Env konfigurierbar** – Chrony-Host, Socket, Volume und Port
 - 🧩 **Minimaler Stack** – Python + Flask + chronyc
 
 ---
@@ -32,7 +33,10 @@
 
 ### Voraussetzungen
 - Docker (+ Docker Compose oder Portainer)
-- Laufender `chronyd` (siehe Hinweis unten)
+- Laufender Chrony-Daemon, z. B. [hAI.Chrony](https://github.com/jbkunama1/hAI.Chrony) (Container `highfish1_chrony`)
+- Docker-Netzwerk `highfishnetwork` (extern)
+- Im Chrony: `bindcmdaddress` und `cmdallow` so gesetzt, dass das Dashboard zugreifen darf
+- Für die Clients-Ansicht: Volume `/run/chrony` des Chrony-Containers (enthält `chronyd.sock`)
 
 ### Docker
 
@@ -40,6 +44,9 @@
 docker run -d \
   --name chrony-status-dashboard \
   --restart unless-stopped \
+  --network highfishnetwork \
+  -e CHRONY_HOST=highfish1_chrony \
+  -v highfish1_chrony_run:/run/chrony \
   -p 1234:1234 \
   ghcr.io/jbkunama1/hai.chrony-status-dashboard:latest
 ```
@@ -54,10 +61,20 @@ services:
     image: ghcr.io/jbkunama1/hai.chrony-status-dashboard:latest
     container_name: chrony-status-dashboard
     restart: unless-stopped
+    environment:
+      CHRONY_HOST: ${CHRONY_HOST:-highfish1_chrony}
+      CHRONY_SOCKET: ${CHRONY_SOCKET:-/run/chrony/chronyd.sock}
     ports:
-      - "1234:1234"
+      - "${DASHBOARD_PORT:-1234}:1234"
+    volumes:
+      - chrony_run:/run/chrony
     networks:
       - highfishnetwork
+
+volumes:
+  chrony_run:
+    external: true
+    name: ${CHRONY_RUN_VOLUME:-highfish1_chrony_run}
 
 networks:
   highfishnetwork:
@@ -74,6 +91,25 @@ docker compose up -d --build
 
 ---
 
+## Konfiguration
+
+| Variable | Default | Beschreibung |
+|---|---|---|
+| `CHRONY_HOST` | `highfish1_chrony` | Hostname oder IP des Chrony-Daemons. Leer = lokales `chronyc` |
+| `CHRONY_SOCKET` | `/run/chrony/chronyd.sock` | Unix-Socket für die Clients-Abfrage |
+| `CHRONY_RUN_VOLUME` | `highfish1_chrony_run` | Name des externen Docker-Volumes mit `/run/chrony` des Chrony-Containers |
+| `DASHBOARD_PORT` | `1234` | Host-Port des Dashboards (Container-intern immer 1234) |
+
+In Portainer: Stack → *Environment variables* → Werte eintragen → Update the stack.
+
+Volume-Name prüfen:
+
+```bash
+docker inspect highfish1_chrony --format '{{range .Mounts}}{{.Name}} -> {{.Destination}}{{"\n"}}{{end}}'
+```
+
+---
+
 ## Update
 
 - **Portainer:** Stack → Update → *Re-pull image* aktivieren → Update the stack
@@ -83,14 +119,16 @@ docker compose up -d --build
 
 ## Hinweis: Zugriff auf chronyd
 
-Das Image enthält nur den Client `chronyc`, **keinen** `chronyd`. `chronyc` muss den Chrony-Dienst erreichen können. Aus einem Container im `highfishnetwork` ist der `chronyd` des Hosts nicht automatisch erreichbar. Dann zeigen die Boxen rote Fehlermeldungen.
+Das Image enthält nur den Client `chronyc`, **keinen** `chronyd`. Das Dashboard fragt den Daemon so ab:
 
-Mögliche Wege:
-- Chrony als eigener Container im selben Netzwerk (siehe [hAI.Chrony](https://github.com/jbkunama1/hAI.Chrony)) und `chronyc` darauf konfigurieren
-- Host-Chrony mit `bindcmdaddress` und `cmdallow` freigeben
-- Dashboard mit `network_mode: host` betreiben
+- `tracking`, `sources`, `activity` → per Netzwerk (`chronyc -h $CHRONY_HOST`, UDP 323)
+- `clients` → per Unix-Socket (`CHRONY_SOCKET`), weil `chronyd` diesen Befehl per Netzwerk mit `501 Not authorised` ablehnt
 
-Für die Clients-Ansicht in der `chrony.conf`: `noclientlog` deaktivieren und `clientloglimit` > 0 setzen.
+Anforderungen am Chrony-Daemon:
+- Dashboard und Chrony im selben Docker-Netzwerk (`highfishnetwork`)
+- In der `chrony.conf`: `bindcmdaddress 0.0.0.0` und passendes `cmdallow`
+- Socket-Volume im Dashboard eingehängt (siehe Stack)
+- Für die Clients-Ansicht: `noclientlog` deaktivieren und `clientloglimit` > 0 setzen
 
 ---
 
@@ -116,8 +154,8 @@ hAI.chrony-status-dashboard/
 ## Architektur
 
 ```text
-Browser ──HTTP :1234──> Flask-App ──shell──> chronyc (tracking, sources, activity, clients)
-         <─HTML─────────             <─Text──
+Browser ──HTTP :1234──> Flask-App ──chronyc -h CHRONY_HOST (UDP 323)──> Chrony-Container
+         <─HTML─────────             └─chronyc -h chronyd.sock (Volume)──> clients
 ```
 
 ---
@@ -134,12 +172,23 @@ Browser ──HTTP :1234──> Flask-App ──shell──> chronyc (tracking, 
 
 | Problem | Prüfen |
 |---|---|
+| `506 Cannot talk to daemon` | `CHRONY_HOST` korrekt? Chrony-Container läuft, selbes Netzwerk? `cmdallow`/`bindcmdaddress` gesetzt? |
+| Host unbekannt / nicht auflösbar | Containername stimmt? Beide im `highfishnetwork`? |
+| `501 Not authorised` bei Clients | Socket-Volume eingehängt? `CHRONY_RUN_VOLUME` = tatsächlicher Volume-Name? |
+| Clients-Box zeigt Hinweistext | `ls -l /run/chrony` im Dashboard-Container: liegt dort `chronyd.sock`? |
+| Clients-Box leer | `noclientlog` aus, `clientloglimit` > 0 |
+| Volume `... not found` beim Deploy | Volume-Name per `docker volume ls \| grep chrony_run` prüfen |
 | Seite zeigt 500 / `command_failed is undefined` | Aktuelles Image ziehen (Fix seit Commit `3fb2f32`) |
-| Rote Fehlerboxen bei allen Befehlen | `chronyd` aus dem Container erreichbar? Siehe Hinweis oben |
-| Clients-Box leer | `noclientlog` aus, `clientloglimit` > 0, `cmdallow` gesetzt |
 | `manifest unknown` / `denied` beim Pull | Build erfolgreich? GHCR-Paket öffentlich? |
-| Port belegt | Host-Port in `ports:` ändern, z. B. `"8234:1234"` |
+| Port belegt | `DASHBOARD_PORT` ändern, z. B. `8234` |
 | Netzwerk nicht gefunden | `docker network create highfishnetwork` |
+
+Tests direkt im Container:
+
+```bash
+docker exec chrony-status-dashboard chronyc -h highfish1_chrony tracking
+docker exec chrony-status-dashboard chronyc -h /run/chrony/chronyd.sock -n clients
+```
 
 ---
 
