@@ -25,9 +25,9 @@ def run_command(cmd):
 def command_failed(output):
     return not output or output.startswith(ERROR_PREFIXES)
 
-@app.template_filter('command_failed')
-def template_command_failed(output):
-    return command_failed(output)
+# Template ruft command_failed(x) als Funktion auf -> Global noetig, Filter allein reicht nicht
+app.jinja_env.globals['command_failed'] = command_failed
+app.jinja_env.filters['command_failed'] = command_failed
 
 @app.route("/")
 def index():
