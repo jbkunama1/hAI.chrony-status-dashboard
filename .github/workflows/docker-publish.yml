@@ -3,6 +3,8 @@ name: Build and Push GHCR Image
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    types: [closed]
   workflow_dispatch:
 
 env:
