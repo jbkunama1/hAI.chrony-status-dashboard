@@ -8,12 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - "1234:1234"
-    networks:
-      - highfishnetwork
-
-networks:
-  highfishnetwork:
-    driver: bridge
+    network_mode: host
 
 # Host-Netzwerk: Zugriff auf chronyc vom Host
 
