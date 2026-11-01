@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import subprocess
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo  # Python 3.9+
@@ -6,6 +7,10 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
+
+# Chrony-Daemon laeuft im eigenen Container (hAI.Chrony) im selben Netzwerk
+CHRONY_HOST = os.environ.get("CHRONY_HOST", "highfish1_chrony")
+CHRONYC = f"chronyc -h {CHRONY_HOST}" if CHRONY_HOST else "chronyc"
 
 def run_command(cmd):
     try:
@@ -36,12 +41,12 @@ def index():
     now_utc = datetime.now(timezone.utc)
 
     # Chrony-Kommandos
-    tracking = run_command("chronyc tracking")
-    sources = run_command("chronyc sources -v")
-    activity = run_command("chronyc activity")
-    clients = run_command("chronyc -n clients")
+    tracking = run_command(f"{CHRONYC} tracking")
+    sources = run_command(f"{CHRONYC} sources -v")
+    activity = run_command(f"{CHRONYC} activity")
+    clients = run_command(f"{CHRONYC} -n clients")
     if command_failed(clients):
-        fallback_clients = run_command("chronyc clients")
+        fallback_clients = run_command(f"{CHRONYC} clients")
         if not command_failed(fallback_clients):
             clients = fallback_clients
         else:
