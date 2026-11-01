@@ -13,4 +13,7 @@ services:
 
 networks:
   highfishNetwork:
-    driver: bridge
+    external: true
+
+# HINWEIS: Erstelle das Netzwerk zuerst in Portainer unter "Networks" → "Add network" (driver: bridge)
+
