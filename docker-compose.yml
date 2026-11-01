@@ -6,6 +6,8 @@ services:
     build: .
     container_name: chrony-status-dashboard
     restart: unless-stopped
+
+
     ports:
       - "5000:5000"
     networks:
