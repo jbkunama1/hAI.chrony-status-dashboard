@@ -7,7 +7,7 @@
 
 
 
-![Chrony LAN Logo](./assets/chrony-logo.png)
+![Chrony LAN Logo](chrony-logo.png)
 
 Ein leichtgewichtiges Web-Dashboard für deinen **Chrony LAN NTP Server**.  
 Zeigt die wichtigsten Statusinfos deines Chrony-Dienstes direkt im Browser an – ideal für Homelab, Serverraum oder Monitoring-Screen. 🚀
