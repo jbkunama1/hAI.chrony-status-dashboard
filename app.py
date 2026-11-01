@@ -12,6 +12,9 @@ ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
 CHRONY_HOST = os.environ.get("CHRONY_HOST", "highfish1_chrony")
 CHRONYC = f"chronyc -h {CHRONY_HOST}" if CHRONY_HOST else "chronyc"
 
+# 'clients' ist per Netzwerk nicht erlaubt (501 Not authorised) -> Unix-Socket des Daemons
+CHRONY_SOCKET = os.environ.get("CHRONY_SOCKET", "/run/chrony/chronyd.sock")
+
 def run_command(cmd):
     try:
         output = subprocess.check_output(
@@ -34,6 +37,22 @@ def command_failed(output):
 app.jinja_env.globals['command_failed'] = command_failed
 app.jinja_env.filters['command_failed'] = command_failed
 
+def get_clients():
+    if CHRONY_SOCKET and os.path.exists(CHRONY_SOCKET):
+        clients = run_command(f"chronyc -h {CHRONY_SOCKET} -n clients")
+        if not command_failed(clients):
+            return clients
+    clients = run_command(f"{CHRONYC} -n clients")
+    if not command_failed(clients):
+        return clients
+    return (
+        "Keine Client-Daten verfügbar.\n"
+        "'clients' erlaubt chronyd nur über den lokalen Unix-Socket.\n"
+        f"Socket-Volume nach {CHRONY_SOCKET} einhängen (siehe README).\n"
+        "Außerdem in chrony.conf: 'noclientlog' deaktivieren und 'clientloglimit' > 0.\n\n"
+        f"{clients or ''}"
+    ).strip()
+
 @app.route("/")
 def index():
     # Zeiten
@@ -44,18 +63,7 @@ def index():
     tracking = run_command(f"{CHRONYC} tracking")
     sources = run_command(f"{CHRONYC} sources -v")
     activity = run_command(f"{CHRONYC} activity")
-    clients = run_command(f"{CHRONYC} -n clients")
-    if command_failed(clients):
-        fallback_clients = run_command(f"{CHRONYC} clients")
-        if not command_failed(fallback_clients):
-            clients = fallback_clients
-        else:
-            clients = (
-                "Keine Client-Daten verfügbar.\n"
-                "Prüfe in chrony.conf: 'noclientlog' deaktivieren und 'clientloglimit' > 0.\n"
-                "Stelle sicher, dass der Flask-User 'chronyc -n clients' ausführen darf.\n\n"
-                f"{clients or fallback_clients or ''}"
-            ).strip()
+    clients = get_clients()
 
     return render_template(
         "index.html",
