@@ -7,7 +7,7 @@ services:
     container_name: chrony-status-dashboard
     restart: unless-stopped
     ports:
-      - "1234:5000"
+      - "1234:8000"
     networks:
       - highfishNetwork
 
