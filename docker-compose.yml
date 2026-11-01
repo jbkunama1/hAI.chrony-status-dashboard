@@ -6,10 +6,18 @@ services:
     restart: unless-stopped
     environment:
       CHRONY_HOST: ${CHRONY_HOST:-highfish1_chrony}
+      CHRONY_SOCKET: ${CHRONY_SOCKET:-/run/chrony/chronyd.sock}
     ports:
       - "${DASHBOARD_PORT:-1234}:1234"
+    volumes:
+      - chrony_run:/run/chrony
     networks:
       - highfishnetwork
+
+volumes:
+  chrony_run:
+    external: true
+    name: ${CHRONY_RUN_VOLUME:-highfish1_chrony_run}
 
 networks:
   highfishnetwork:
