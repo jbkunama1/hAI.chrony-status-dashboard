@@ -57,10 +57,10 @@ services:
     ports:
       - "1234:1234"
     networks:
-      - highfishNetwork
+      - highfishnetwork
 
 networks:
-  highfishNetwork:
+  highfishnetwork:
     external: true
 ```
 
@@ -83,7 +83,7 @@ docker compose up -d --build
 
 ## Hinweis: Zugriff auf chronyd
 
-Das Image enthält nur den Client `chronyc`, **keinen** `chronyd`. `chronyc` muss den Chrony-Dienst erreichen können. Aus einem Container im `highfishNetwork` ist der `chronyd` des Hosts nicht automatisch erreichbar. Dann zeigen die Boxen rote Fehlermeldungen.
+Das Image enthält nur den Client `chronyc`, **keinen** `chronyd`. `chronyc` muss den Chrony-Dienst erreichen können. Aus einem Container im `highfishnetwork` ist der `chronyd` des Hosts nicht automatisch erreichbar. Dann zeigen die Boxen rote Fehlermeldungen.
 
 Mögliche Wege:
 - Chrony als eigener Container im selben Netzwerk (siehe [hAI.Chrony](https://github.com/jbkunama1/hAI.Chrony)) und `chronyc` darauf konfigurieren
@@ -139,7 +139,7 @@ Browser ──HTTP :1234──> Flask-App ──shell──> chronyc (tracking, 
 | Clients-Box leer | `noclientlog` aus, `clientloglimit` > 0, `cmdallow` gesetzt |
 | `manifest unknown` / `denied` beim Pull | Build erfolgreich? GHCR-Paket öffentlich? |
 | Port belegt | Host-Port in `ports:` ändern, z. B. `"8234:1234"` |
-| Netzwerk nicht gefunden | `docker network create highfishNetwork` |
+| Netzwerk nicht gefunden | `docker network create highfishnetwork` |
 
 ---
 
