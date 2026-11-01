@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  chrony-status-dashboard:
+    image: ghcr.io/jbkunama1/hAI.chrony-status-dashboard:latest
+    build: .
+    container_name: chrony-status-dashboard
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - highfishNetwork
+
+networks:
+  highfishNetwork:
+    external: true
