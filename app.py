@@ -25,6 +25,10 @@ def run_command(cmd):
 def command_failed(output):
     return not output or output.startswith(ERROR_PREFIXES)
 
+@app.template_filter('command_failed')
+def template_command_failed(output):
+    return command_failed(output)
+
 @app.route("/")
 def index():
     # Zeiten
@@ -60,4 +64,4 @@ def index():
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=False)
+    app.run(host="0.0.0.0", port=1234, debug=False)
