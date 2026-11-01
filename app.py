@@ -7,6 +7,9 @@ from flask import Flask, render_template
 app = Flask(__name__)
 ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
 
+def command_failed(output):
+    return not output or any(prefix in output for prefix in ERROR_PREFIXES)
+
 def run_command(cmd):
     try:
         output = subprocess.check_output(
