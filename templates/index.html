@@ -1,15 +1,20 @@
 <!doctype html>
 <html lang="de">
 <head>
-Fix BuyMeACoffee link: replace DEINNAME with highfish    <title>highfish Chrony Status Dashboard</title>
+    <title>highfish Chrony Status Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% if refresh_seconds %}
     <meta http-equiv="refresh" content="{{ refresh_seconds }}">
     {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
+        <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    </head>
+    <body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span>
+        <span id="theme-text">Dark Mode</span>
+    </button>
+    <div class="container" data-theme="dark">
         <header>
             <h1>highfish Chrony Status Dashboard</h1>
             <p class="subtitle">LAN NTP / Chrony Overview</p>
@@ -21,24 +26,24 @@ Fix BuyMeACoffee link: replace DEINNAME with highfish    <title>highfish Chrony 
             <p class="time-utc">(UTC: {{ now_utc }})</p>
         </section>
 
-        <section>
+        <section class="tracking">
             <h2>Tracking</h2>
-            <pre>{{ tracking }}</pre>
+            <pre{% if command_failed(tracking) %} class="error"{% endif %}>{{ tracking }}</pre>
         </section>
 
-        <section>
+        <section class="sources">
             <h2>Sources</h2>
-            <pre>{{ sources }}</pre>
+            <pre{% if command_failed(sources) %} class="error"{% endif %}>{{ sources }}</pre>
         </section>
 
-        <section>
+        <section class="activity">
             <h2>Activity</h2>
-            <pre>{{ activity }}</pre>
+            <pre{% if command_failed(activity) %} class="error"{% endif %}>{{ activity }}</pre>
         </section>
 
-        <section>
+        <section class="clients">
             <h2>Clients</h2>
-            <pre>{{ clients }}</pre>
+            <pre{% if command_failed(clients) %} class="error"{% endif %}>{{ clients }}</pre>
         </section>
 
         <footer>

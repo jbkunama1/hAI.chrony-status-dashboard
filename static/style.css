@@ -11,6 +11,17 @@
     --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+[data-theme="light"] {
+    --bg-color: #f9fafb;
+    --bg-alt: #ffffff;
+    --card-bg: #ffffff;
+    --accent: #3b82f6;
+    --accent-soft: #60a5fa;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -19,8 +30,13 @@ body {
     margin: 0;
     padding: 0;
     font-family: var(--font-sans);
-    background: radial-gradient(circle at top, #1f2937 0, var(--bg-alt) 40%, #000 100%);
+    background: radial-gradient(circle at top, var(--bg-color) 0, var(--bg-alt) 40%, var(--bg-alt) 100%);
     color: var(--text-main);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="light"] {
+    background: radial-gradient(circle at top, var(--bg-color) 0, var(--bg-alt) 100%, var(--bg-alt) 100%);
 }
 
 .container {
@@ -28,6 +44,165 @@ body {
     margin: 0 auto;
     padding: 24px 16px 48px;
 }
+
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--accent);
+}
+
+[data-theme="light"] .theme-toggle {
+    background: #ffffff;
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+[data-theme="light"] .timebox {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+[data-theme="light"] .timebox h2 {
+    color: white;
+}
+
+[data-theme="light"] section {
+    background: #ffffff;
+    border-color: var(--border);
+}
+
+[data-theme="light"] pre {
+    background: var(--bg-color);
+    border-color: var(--border);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-main);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header .subtitle {
+    margin: 8px 0 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+section h2 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+section h2::before {
+    content: "📊";
+    font-size: 18px;
+}
+
+.timebox {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
+    color: white;
+    border: none;
+    text-align: center;
+    padding: 32px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+}
+
+.timebox h2 {
+    color: white;
+    margin: 0 0 16px 0;
+}
+
+.timebox p.time {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 8px 0;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+}
+
+.timebox p.time-utc {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 8px 0 0 0;
+}
+
+pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-main);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+pre.error {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+    border-color: #f87171;
+}
+
 
 header {
     text-align: center;

@@ -2,15 +2,49 @@
 [![Status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)](https://github.com/jbkunama1/hAI.chrony-status-dashboard)
 [![Python](https://img.shields.io/badge/Python-Flask-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://github.com/jbkunama1/hAI.chrony-status-dashboard)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/jbkunama1/hAI.chrony-status-dashboard)
+[![GHCR](https://img.shields.io/badge/GHCR-published-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/jbkunama1/hAI.chrony-status-dashboard/pkgs/container/hAI.chrony-status-dashboard)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 
 
 
-![Chrony LAN Logo](./assets/chrony-logo.png)
+![Chrony LAN Logo](chrony-logo.png)
 
 Ein leichtgewichtiges Web-Dashboard für deinen **Chrony LAN NTP Server**.  
 Zeigt die wichtigsten Statusinfos deines Chrony-Dienstes direkt im Browser an – ideal für Homelab, Serverraum oder Monitoring-Screen. 🚀
+
+---
+
+## 🚀 Deployment
+
+### Docker
+```bash
+docker run -d \
+  --name chrony-status-dashboard \
+  -p 1234:5000 \
+  ghcr.io/jbkunama1/hai.chrony-status-dashboard:latest
+```
+
+### Portainer Stack
+```yaml
+version: '3.8'
+services:
+  chrony-status-dashboard:
+    image: ghcr.io/jbkunama1/hai.chrony-status-dashboard:latest
+    container_name: chrony-status-dashboard
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - highfishNetwork
+networks:
+  highfishNetwork:
+    external: true
+```
+
+### GitHub Actions (automatic)
+- Build & Push to GHCR on push to `main`
+- Build on PR merge
 
 ---
 
