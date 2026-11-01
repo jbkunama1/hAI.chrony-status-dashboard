@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   chrony-status-dashboard:
     image: ghcr.io/jbkunama1/hai.chrony-status-dashboard:latest
     build: .
     container_name: chrony-status-dashboard
     restart: unless-stopped
-
-
+    environment:
+      CHRONY_HOST: ${CHRONY_HOST:-highfish1_chrony}
     ports:
-      - "1234:1234"
+      - "${DASHBOARD_PORT:-1234}:1234"
     networks:
       - highfishnetwork
 
