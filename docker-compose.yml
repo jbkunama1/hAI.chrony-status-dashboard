@@ -13,4 +13,4 @@ services:
 
 networks:
   highfishNetwork:
-    external: true
+    driver: bridge
