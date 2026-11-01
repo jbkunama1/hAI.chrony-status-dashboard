@@ -7,9 +7,6 @@ from flask import Flask, render_template
 app = Flask(__name__)
 ERROR_PREFIXES = ("Error running '", "Unexpected error running '")
 
-def command_failed(output):
-    return not output or any(prefix in output for prefix in ERROR_PREFIXES)
-
 def run_command(cmd):
     try:
         output = subprocess.check_output(
@@ -27,6 +24,10 @@ def run_command(cmd):
 
 def command_failed(output):
     return not output or output.startswith(ERROR_PREFIXES)
+
+@app.template_filter('command_failed')
+def template_command_failed(output):
+    return command_failed(output)
 
 @app.route("/")
 def index():
@@ -63,4 +64,4 @@ def index():
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=1234, debug=True)
+    app.run(host="0.0.0.0", port=1234, debug=False)
